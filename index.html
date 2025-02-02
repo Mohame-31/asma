@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>رسالة حب خاصة 💖</title>
+    <style>
+        body {
+            background: #ffe6eb;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Arial', sans-serif;
+        }
+
+        .envelope-container {
+            position: relative;
+            transition: all 0.8s ease;
+        }
+
+        .envelope {
+            width: 320px;
+            height: 220px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.6s cubic-bezier(0.33, 1, 0.68, 1);
+        }
+
+        .envelope-body {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: #f8f8f8;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            clip-path: polygon(0 0, 100% 0, 100% 85%, 50% 100%, 0 85%);
+        }
+
+        .envelope-flap {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: #e0e0e0;
+            transform-origin: top;
+            transition: all 0.8s ease;
+            clip-path: polygon(0 0, 100% 0, 50% 50%);
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.05);
+        }
+
+        .letter {
+            position: absolute;
+            width: 90%;
+            height: 230px;
+            background: #ffb3c6;
+            padding: 25px;
+            top: 250px;
+            left: 5%;
+            opacity: 0;
+            border-radius: 8px;
+            transition: all 0.8s cubic-bezier(0.33, 1, 0.68, 1);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+        }
+
+        .envelope-container.open .envelope {
+            transform: translateY(-160px) scale(0.9);
+        }
+
+        .envelope-container.open .envelope-flap {
+            transform: rotateX(180deg) translateY(-30%);
+            opacity: 0.8;
+        }
+
+        .envelope-container.open .letter {
+            top: 200px;
+            opacity: 1;
+            transform: translateY(-180px);
+        }
+
+        .message {
+            text-align: center;
+            color: #a4133c;
+            line-height: 1.8;
+            position: relative;
+        }
+
+        .secret-btn {
+            background: #ff4d6d;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 30px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .secret-btn:hover {
+            background: #ff758f;
+            transform: translateY(-2px);
+        }
+
+        #secretMessage {
+            font-size: 32px;
+            margin-top: 50px;
+            display: none;
+            color: #c9184a;
+            font-family: 'Dancing Script', cursive;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #ff4d6d;
+            color: white;
+            border: none;
+            padding: 10px 30px;
+            border-radius: 20px;
+            cursor: pointer;
+            opacity: 0;
+            transition: all 0.5s ease;
+            z-index: 999;
+            font-size: 18px;
+            box-shadow: 0 3px 10px rgba(255, 77, 109, 0.3);
+        }
+
+        .envelope-container.open .close-btn {
+            opacity: 1;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+             /* إضافة أنماط القلوب الطائرة */
+        .hearts-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        .heart {
+            position: absolute;
+            color: #ff4d6d;
+            font-size: 24px;
+            animation: float 3s ease-out forwards;
+            opacity: 0.8;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0) translateX(0) scale(1);
+                opacity: 0.8;
+            }
+            100% {
+                transform: translateY(-100vh) translateX(50vw) scale(0);
+                opacity: 0;
+            }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="envelope-container">
+        <div class="envelope" onclick="toggleEnvelope()">
+            <div class="envelope-body"></div>
+            <div class="envelope-flap"></div>
+        </div>
+        <div class="letter">
+            <div class="message">
+                <h2>إلى حبيبتي الغالية..</h2>
+                <p>أنتِ القصيدة التي لا تنتهي..<br>والحب الذي لا يُوصف ❤️</p>
+                <button class="secret-btn" onclick="showSecret()">💖 اضغط للمفاجأة</button>
+                <div id="secretMessage">I Love You</div>
+            </div>
+        </div>
+    </div>
+     <div class="hearts-container" id="heartsContainer"></div>
+<script>
+    let isOpen = false;
+    let audioContext;
+    let isAudioReady = false;
+
+    // تهيئة النظام الصوتي
+    function initAudio() {
+        if (!audioContext) {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            isAudioReady = true;
+        }
+    }
+
+    // تشغيل الأصوات
+    function playSound(type) {
+        if (!isAudioReady) return;
+        
+        const now = audioContext.currentTime;
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        switch(type) {
+            case 'open':
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(1200, now);
+                gainNode.gain.setValueAtTime(0.4, now);
+                break;
+            case 'close':
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(800, now);
+                gainNode.gain.setValueAtTime(0.3, now);
+                break;
+            case 'secret':
+                oscillator.type = 'square';
+                oscillator.frequency.setValueAtTime(2000, now);
+                gainNode.gain.setValueAtTime(0.5, now);
+                break;
+        }
+
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.start(now);
+        oscillator.stop(now + 0.25);
+    }
+
+    // فتح/إغلاق الظرف
+    function toggleEnvelope() {
+        if (!isAudioReady) initAudio();
+        
+        const container = document.querySelector('.envelope-container');
+        isOpen = !isOpen;
+        
+        setTimeout(() => {
+            playSound(isOpen ? 'open' : 'close');
+        }, isOpen ? 100 : 300);
+        
+        container.classList.toggle('open', isOpen);
+        if(!isOpen) {
+            document.getElementById('secretMessage').style.display = 'none';
+        }
+    }
+
+    // عرض الرسالة السرية مع المؤثرات
+    function showSecret() {
+        if (!isAudioReady) initAudio();
+        playSound('secret');
+        const secret = document.getElementById('secretMessage');
+        secret.style.display = 'block';
+        createHearts();
+        
+        secret.style.animation = 'vibrate 0.3s ease';
+        setTimeout(() => {
+            secret.style.animation = '';
+        }, 300);
+    }
+
+    // إنشاء تأثير القلوب الطائرة
+    function createHearts() {
+        const container = document.getElementById('heartsContainer');
+        const numHearts = 15;
+        
+        for(let i = 0; i < numHearts; i++) {
+            const heart = document.createElement('div');
+            heart.className = 'heart';
+            heart.innerHTML = '💖';
+            
+            heart.style.left = `${Math.random() * 100}%`;
+            heart.style.top = `${Math.random() * 100}%`;
+            heart.style.animationDuration = `${2 + Math.random() * 2}s`;
+            heart.style.animationDelay = `${Math.random() * 0.5}s`;
+            
+            container.appendChild(heart);
+            
+            heart.addEventListener('animationend', () => {
+                heart.remove();
+            });
+        }
+    }
+
+    // إضافة أنيميشن الاهتزاز
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes vibrate {
+            0% { transform: translate(-50%, -50%) scale(1); }
+            25% { transform: translate(-50%, -50%) scale(1.1); }
+            50% { transform: translate(-50%, -50%) scale(0.9); }
+            75% { transform: translate(-50%, -50%) scale(1.05); }
+            100% { transform: translate(-50%, -50%) scale(1); }
+        }
+    `;
+    document.head.appendChild(style);
+</script>
+</body>
+</html>
